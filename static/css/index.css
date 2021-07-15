@@ -1,0 +1,45 @@
+#score {
+    position: absolute;
+    margin: 0;
+    margin-bottom: -2em;
+    margin-left: .2em;
+    padding: .1em;
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+#buttons {
+    position: absolute;
+    margin-top: -1.5em;
+}
+
+canvas {
+    border: 1px black solid;
+}
+
+#chat,
+#dm {
+    border: 1px black solid;
+    height: 15em;
+    width: 50em;
+    overflow: scroll;
+}
+
+p {
+    font-size: 1.5rem;
+}
+
+form {
+    display: flex;
+}
+
+input {
+    width: 20em;
+}
+
+#chat-parent {
+    display: flex;
+}
+
+#chat-parent>div {
+    margin-right: 1em;
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://unpkg.com/socket.io-client@4.1.2/dist/socket.io.js"></script>
+
+    <script src="/static/js/img.js"></script>
+    <script src="/static/js/classes_units_client.js"></script>
+    <script src="/static/js/client.mjs" type="module"></script>
+
+    <link rel="stylesheet" href="/static/css/index.css">
+
+    <title>Index</title>
+</head>
+<body>
+    <div>
+        <p id="score"></p>
+        <canvas id="canvas1" width="400" height="400"></canvas>
+        <div id="buttons">
+            <button id="map-change">Change map</button>
+        </div>
+        <div id="inventory"></div>
+    </div>
+    <div id="chat-parent">
+        <div>
+            <h3>Chat</h3>
+            <div id="chat"></div>
+            <form>
+                <input type="text" id="chat-input">
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        <div>
+            <h3>DMs</h3>
+            <div id="dm"></div>
+            <form>
+                <input type="text" id="dm-input">
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
