@@ -1,3 +1,13 @@
+// IMG.bullet = new Image()
+// IMG.bullet.src = 'static/img/bullet.png'
+// IMG.player = new Image()
+// IMG.player.src = 'static/img/player_sprite sheet.png'
+// IMG.map = new Image()
+// IMG.map.src = 'static/img/map2.png'
+// IMG.enemyBat = new Image()
+// IMG.enemyBat.src = 'static/img/bat_sprite sheet.png'
+// IMG.enemyBee = new Image()
+// IMG.enemyBee.src = 'static/img/bee_sprite sheet.png'
 
 // the map's dimensions
 const GAME_WIDTH = 1200
@@ -265,18 +275,6 @@ class Player extends MovingUnit{
     getScore = ()=>this.score
     getInventory = ()=>this.inventory
     getItem = id=>this.inventory[id]
-    getInventoryToDb = function(){
-        const inv2 = {}
-        for(let id in this.inventory){
-            item = this.inventory[id]
-            inv2[id] = {
-                name: item.getName(),
-                quantity: item.getQuantity()
-                // function: item.getCb()
-            }
-        }
-        return inv2
-    }
 
     // set 
     setLives = lives=>lives>=0 ? this.lives=lives : null
@@ -298,7 +296,7 @@ class Player extends MovingUnit{
         for(let item of items){
             const thisItem = this.inventory[item.getId()]
             if(thisItem){
-                thisItem.setQuantity(thisItem.getQuantity()+item.getQuantity())
+                thisItem.setQuantity(this.item.getQuantity()+1)
             }
             else{
                 this.inventory[item.getId()] = item
@@ -392,6 +390,43 @@ class Player extends MovingUnit{
 
     }
 
+    // assignToWASD(){
+    //     document.onkeydown = e=>{
+    //         switch (e.key) {
+    //             case 'w':
+    //                 this.direction.y = -1
+    //                 break;
+    //             case 'd':
+    //                 this.direction.x = 1
+    //                 break;
+    //             case 's':
+    //                 this.direction.y = 1
+    //                 break;
+    //             case 'a':
+    //                 this.direction.x = -1
+    //                 break;
+    //         }
+    //     }
+
+    //     document.onkeyup = e=>{
+    //         switch (e.key) {
+    //             case 'w':
+    //                 this.direction.y = 0
+    //                 break;
+    //             case 'd':
+    //                 this.direction.x = 0
+    //                 break;
+    //             case 's':
+    //                 this.direction.y = 0
+    //                 break;
+    //             case 'a':
+    //                 this.direction.x = 0
+    //                 break;
+    //         }
+
+    //     }
+    // }
+
     mouseActions(button, isDown){
         if(button === 0){
             this.clicks.left = Boolean(isDown)
@@ -405,6 +440,28 @@ class Player extends MovingUnit{
     mouseMove(offsetX, offsetY){
         this.setMousePosition(offsetX, offsetY)
     }
+
+    // assignToClicks(){
+    //     document.onmousedown = e=>{
+    //         if(e.button === 0){
+    //             this.clicks.left = true
+    //         }
+    //         else if(e.button === 2){
+    //             this.clicks.right = true
+    //         }
+    //     }
+    //     document.onmouseup = e=>{
+    //         if(e.button === 0){
+    //             this.clicks.left = false
+    //         }
+    //         else if(e.button === 2){
+    //             this.clicks.right = false
+    //         }
+    //     }
+    //     document.onmousemove = e=>{
+    //         this.setMousePosition(e.offsetX, e.offsetY)
+    //     }
+    // }
 
     leftShot(){
         if(this.isLeftAttackReady){
@@ -572,6 +629,10 @@ class Enemy extends BouncingUnit{
 
     // set
     setLives = lives=>this.lives = lives
+
+    // playerCollision(player){
+    //     player.setLives(player.getLives()-1)
+    // }
 
     shoot(player){
         if(!this.isAttackReady){

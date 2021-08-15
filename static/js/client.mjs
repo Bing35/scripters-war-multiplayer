@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function(){
             'offsetY': e.offsetY
         })
     }
+    // playerDict[0.28426512192911635].getMousePosition()
     // chat
     document.querySelector('#chat~form').onsubmit = function(e){
         e.preventDefault()
@@ -62,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     socket.on('addChat', function(message){
         const p = document.createElement('p')
-        p.innerHTML = `${message.username}: ${message.message}`
+        p.innerHTML = `${message.id}: ${message.message}`
         document.querySelector('#chat').append(p)
     })
 
@@ -111,6 +112,14 @@ document.addEventListener('DOMContentLoaded', function(){
                 player.setMapNumber(serverPlayer.mapNumber)
                 player.setCanvasStyle(400, 400)
                 playerDict[player.getId()] = player
+                // if(thisPlayer){
+                //     console.log('this player exists');
+                //     console.log(key, thisPlayer.getId());
+                //     console.log(typeof(key), typeof(thisPlayer.getId()));
+                //     if(key === thisPlayer.getId()){
+                //         console.log(playerDict[player.getId()] === thisPlayer);
+                //     }
+                // }
             }
         }
         else if(mode === 'id'){
@@ -121,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function(){
             delete playerDict[playerPack.id]
         }
         else if(mode === 'update'){
+            // console.log(playerPack);
             for(let key in playerPack){
                 const player = playerPack[key]
                 playerDict[key].setPosition(player.x, player.y)
@@ -181,16 +191,17 @@ document.addEventListener('DOMContentLoaded', function(){
         }
         drawInventory()
     })
+
 })
 
 
 function drawPlayers(context, playerDict){
     for(let key in playerDict){
         const player = playerDict[key]
-        if(player.getMapNumber() === 
-        thisPlayer.getMapNumber()){
+        if(player.getMapNumber() === thisPlayer.getMapNumber()){
             player.draw(context, thisPlayer)
         }
+        // context.fillText('P', player.x, player.y);
     }
 }
 
@@ -200,6 +211,7 @@ function drawBullets(context, bulletDict){
         if(bullet.getMapNumber() === thisPlayer.getMapNumber()){
             bullet.draw(context, thisPlayer)
         }
+        // context.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
     }
 }
 
@@ -221,7 +233,7 @@ function drawInventory(){
     for(let id in inventory){
         const item = inventory[id]
         const button = document.createElement('button')
-        button.innerHTML = `${item.getName()} x${item.getQuantity()}`
+        button.innerHTML = item.getName()
         button.onclick = ()=>socket.emit('useItem', id)
         div2.append(button)
     }

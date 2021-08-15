@@ -2,18 +2,17 @@ import {fileURLToPath, URL} from 'url'
 import http from 'http'
 import express from 'express'
 import {Server} from 'socket.io'
-import mongodb from 'mongodb'
-const {MongoClient} = mongodb
 import { Player, Bullet, Item} from './server/classes_units.js'
 
 const app = express()
 const httpServer = http.createServer(app)
 const io = new Server(httpServer)
-const client = new MongoClient('mongodb://localhost:27017')
-await client.connect()
-const db = client.db('scriptersWar')
-const playerDb = db.collection('player')
 
+const users={
+    'bob': 'bob1',
+    'alice': 'alice1',
+    'joe': 'joe1'
+}
 let loggedInUser = undefined
 
 app.use(express.urlencoded())
@@ -23,75 +22,59 @@ app.get('/login', function(req,res){
     res.sendFile(fileURLToPath(new URL('static/login.html', import.meta.url)))
 })
 app.post('/login', function(req,res){
-    playerDb.findOne({username: req.body.username}, {projection: {username:true, password:true}})
-    .then(function(player){
-        if(!player){
-            res.redirect('/login')
-            return
-        }
-
+    const username = req.body.username
+    if(users[username] === req.body.password){
         loggedInUser = {
-            username: player.username,
-            password: player.password
+            'username': username,
+            'password': req.body.password
         }
-        res.redirect('/')
-    })
+        // res.redirect('/')
+        res.redirect('/game')
+    }
+    else{
+        res.redirect('/login')
+    }
 })
-
 app.get('/signup', function(req, res){
     res.sendFile(fileURLToPath(new URL('static/signup.html', import.meta.url)))
 })
 app.post('/signup', function(req,res){
-    playerDb.findOne({username: req.body.username}, {username:true, password:true})
-    .then(function(player){
-        if(player){
-            res.redirect('/signup')
-            return
-        }
-
-        const items = {}
-        items[1] = {
-            name: 'potion',
-            quantity: 5
-        }
-        items[2] = {
-            name: 'increase score',
-            quantity: 5
-        }
-        playerDb.insertOne({
-            username: req.body.username,
-            password: req.body.password,
-            '1': items[1],
-            '2': items[2]
-        })
+    const username = req.body.username
+    if(!users[username]){
+        users[username] = req.body.password
         loggedInUser = {
-            username: req.body.username,
-            password: req.body.password
+            'username': username,
+            'password': req.body.password
         }
-
-    
         res.redirect('/')
-    })
+    }
+    else{
+        res.redirect('/signup')
+    }
 })
 app.get('/logout', function(req, res){
     loggedInUser = undefined
     res.redirect('/login')
 })
 
+// app.get('/', function(req, res){
+//     if(loggedInUser){
+//         res.sendFile(fileURLToPath(new URL('static/index.html', import.meta.url)))
+//     }
+//     else{
+//         res.redirect('/login')
+//     }
+// })
 app.get('/', function(req, res){
+    res.redirect('/login')
+})
+app.get('/game', function(req, res){
     if(loggedInUser){
         res.sendFile(fileURLToPath(new URL('static/index.html', import.meta.url)))
     }
     else{
         res.redirect('/login')
     }
-})
-
-app.get('/users', function(req,res){
-    playerDb.find({}).toArray()
-    .then(function(data){
-        res.json(data)
-    })
 })
 
 httpServer.listen(process.env.PORT || 5000, ()=>console.log('http server running'))
@@ -106,7 +89,7 @@ const tempbullet = new Bullet(10,10,5,5,5,5)
 const CANVAS_WIDTH = 400
 const CANVAS_HEIGHT = 400
 
-io.on('connection', async function(socket){
+io.on('connection', function(socket){
     console.log('socket connected');
     let thisUsername = undefined
     if(loggedInUser.username){
@@ -119,30 +102,27 @@ io.on('connection', async function(socket){
     player.setCanvasStyle(400, 400)
     const mapNumber = Math.floor((Math.random()*2)+2)
     player.setMapNumber(mapNumber)
-
-    // to solve playerDict problems when query below has not finished
-    playerFns.emitInit()
-
-
-    const itemList = []
-    const items = await playerDb.findOne({username: thisUsername}, {projection: {_id: false, username:false, password:false}})
-    for(let id in items){
-        const item = new Item(id, items[id].name, ()=>1)
-        item.setQuantity(items[id].quantity)
-        itemList.push(item)
-    }
-    player.addItems(itemList)
     playerDict[id] = player
+
+    const items = []
+    items.push(new Item(1, 'potion', function(){
+        player.setLives(player.getMaxLives())
+        return 1
+    }))
+    items.push(new Item(2, 'increase score', function(){
+        player.setScore(player.getScore()+1)
+        return 0
+    }))
+    player.addItems(items)
 
     playerFns.emitInit()
     playerFns.emitId(socket, id)
     bulletFns.emitInit(bulletDict)
-    socket.emit('addItems', itemList)
+    socket.emit('addItems', items)
 
     socket.on('disconnect', function(){
         playerFns.emitRemove(player.getId())
         delete playerDict[id]
-        playerDb.updateOne({username: thisUsername}, {$set: player.getInventoryToDb()})
     })
 
     socket.on('WASDPress', function(array){
@@ -156,7 +136,7 @@ io.on('connection', async function(socket){
     socket.on('addChat', function(message){
         if(message[0] !== '/'){
             io.emit('addChat', {
-                username: thisUsername, 
+                'id':thisUsername, 
                 message
             })
         }
@@ -210,6 +190,7 @@ io.on('connection', async function(socket){
 setInterval(() => {
     playerFns.update()
     bulletFns.update()
+    // io.emit('update', playerDict, bulletDict)
 }, 1000/REFRESH_RATE);
 
 
@@ -272,6 +253,9 @@ bulletFns.move = function(){
 bulletFns.collisions = function(){
     for(let key in bulletDict){
         for(let playerKey in playerDict){
+            // if(bulletDict[key].playerCollision(playerDict[playerKey])){
+            //     delete bulletDict[key]
+            // }
             const bullet = bulletDict[key]
             const player = playerDict[playerKey]
             if(bullet.getMapNumber() !== player.getMapNumber()){
